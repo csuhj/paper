@@ -19,6 +19,8 @@ namespace paper.Hubs
         public async Task NewMessage(long username, string message) =>
             await Clients.All.SendAsync("messageReceived", username, message);
 
+        public async Task MouseMoved(Point point) =>
+            await Task.Run(() => gameHubMediator.FireMouseMoved(Context.ConnectionId, point));
 
         public override Task OnConnectedAsync()
         {

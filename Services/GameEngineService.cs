@@ -8,10 +8,13 @@ namespace paper.Services
         private IHubContext<GameHub> gameHubContext;
         private GameHubMediator gameHubMediator;
         private List<Player> players;
+        private Dictionary<string, Point> playerIdToDirectionVectorPointMap;
         private List<string> newPlayerColours;
         private int nextPlayerId;
         private Thread thread;
         private bool running;
+        private const int worldWidth = 500;
+        private const int worldHeight = 500;
 
         public GameEngineService(IHubContext<GameHub> gameHubContext, GameHubMediator gameHubMediator)
         {
@@ -19,8 +22,10 @@ namespace paper.Services
             this.gameHubMediator = gameHubMediator;
             this.gameHubMediator.ClientConnected += OnClientConnected;
             this.gameHubMediator.ClientDisconnected += OnClientDisconnected;
+            this.gameHubMediator.MouseMoved += OnMouseMoved;
             
             players = new List<Player>();
+            playerIdToDirectionVectorPointMap = new Dictionary<string, Point>();
             newPlayerColours = new List<string>() { "red", "green", "blue", "cyan", "magenta", "yellow" };
             nextPlayerId = 1;
 
@@ -40,20 +45,27 @@ namespace paper.Services
 
         private void GameLoop()
         {
-            Player player1 = new Player() {Name = "Player 1", Colour = "red", X = 0, Y = 0};
-            Player player2 = new Player() {Name = "Player 2", Colour = "green",X = 0, Y = 0};
-            Player player3 = new Player() {Name = "Player 3", Colour = "blue",X = 0, Y = 0};
             while (running)
             {
                 foreach (Player player in players)
                 {
-                    player.X = (player.X + 1) % 300;
-                    player.Y = (player.Y + 1) % 300;
+                    if (!playerIdToDirectionVectorPointMap.TryGetValue(player.Id, out Point point))
+                        continue;
+
+                    int speed = 3;
+
+                    int newX = player.X + (int)Math.Round(point.X * speed);
+                    int newY = player.Y + (int)Math.Round(point.Y * speed);
+                    if (newX > 0 && newX < worldWidth)
+                        player.X = newX;
+                    
+                    if (newY > 0 && newY < worldHeight)
+                        player.Y = newY;
                 }
 
                 GameState gameState = new GameState() { Players = players };
                 GameHub.SendGameStateUpdate(gameHubContext, gameState).Wait();
-                Thread.Sleep(100);
+                Thread.Sleep(1000/25);
             }
         }
 
@@ -61,12 +73,14 @@ namespace paper.Services
         {
             this.gameHubMediator.ClientConnected -= OnClientConnected;
             this.gameHubMediator.ClientDisconnected -= OnClientDisconnected;
+            this.gameHubMediator.MouseMoved -= OnMouseMoved;
         }
 
         private void OnClientConnected(object? sender, ConnectionEventArgs e)
         {
             string colour = newPlayerColours[nextPlayerId % newPlayerColours.Count];
             players.Add(new Player() {Id = e.ConnectionId, Name = $"Player {nextPlayerId}", Colour = colour, X = 0, Y = 0});
+            playerIdToDirectionVectorPointMap.Add(e.ConnectionId, new Point() {X = 0, Y = 0});
             nextPlayerId++;
 
             Console.WriteLine($"Connected {e.ConnectionId}");
@@ -75,10 +89,17 @@ namespace paper.Services
         private void OnClientDisconnected(object? sender, ConnectionEventArgs e)
         {
             int indexOfPlayer = players.FindIndex(p => p.Id == e.ConnectionId);
-            if (indexOfPlayer > -1)
-                players.RemoveAt(indexOfPlayer);
+            if (indexOfPlayer < 0)
+                return;
 
+            players.RemoveAt(indexOfPlayer);
+            playerIdToDirectionVectorPointMap.Remove(e.ConnectionId);
             Console.WriteLine($"Disconnected {e.ConnectionId}");
+        }
+
+        private void OnMouseMoved(object? sender, MouseEventArgs e)
+        {
+            playerIdToDirectionVectorPointMap[e.ConnectionId] = e.Point;
         }
     }
 }
