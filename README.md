@@ -15,3 +15,9 @@ dotnet watch
 ```
 
 Then browse to http://localhost:5128/index.html to join the game.
+
+If you want to specify a non-localhost URL then use the command line:
+
+```bash
+dotnet watch  --urls=https://example.com/index.html
+```
