@@ -10,6 +10,7 @@ module.exports = {
         filename: "[name].[chunkhash].js",
         publicPath: "/",
     },
+    devtool: "inline-source-map",
     resolve: {
         extensions: [".js", ".ts"],
     },
