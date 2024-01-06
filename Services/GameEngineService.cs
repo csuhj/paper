@@ -53,6 +53,9 @@ namespace paper.Services
             {
                 foreach (Player player in players)
                 {
+                    if (player.IsDead)
+                        continue;
+
                     if (!playerIdToDirectionVectorPointMap.TryGetValue(player.Id, out Point point))
                         continue;
 
@@ -71,6 +74,9 @@ namespace paper.Services
                 {
                     foreach (Player player in players)
                     {
+                        if (player.IsDead)
+                            continue;
+
                         if (!playerIdToTrailMap.TryGetValue(player.Id, out Trail trail))
                             continue;
 

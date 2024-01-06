@@ -43,7 +43,7 @@ export class CanvasHelper {
 
         this.context.beginPath();
         this.context.arc(offsetX, offsetY, /*player.size*/ 25, 0, 2 * Math.PI, false);
-        this.context.fillStyle = player.colour;
+        this.context.fillStyle = this.getPlayerColour(player);
         this.context.fill();
         this.context.lineWidth = 1;
         this.context.strokeStyle = 'black';
@@ -62,7 +62,7 @@ export class CanvasHelper {
 
         this.context.beginPath();
         this.context.lineWidth = 5;
-        this.context.strokeStyle = player.colour;
+        this.context.strokeStyle = this.getPlayerColour(player);
 
         for (var i=0; i<trail.points?.length; i++) {
             if (!trail.points[i]) {
@@ -94,6 +94,10 @@ export class CanvasHelper {
         var viewPortTop = me.y - centerY;
 
         return [viewPortLeft, viewPortTop];
+    }
+
+    private getPlayerColour(player: Player) {
+        return player.isDead? 'grey' : player.colour;
     }
 
     private createBackgroundPattern() {
