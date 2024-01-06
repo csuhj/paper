@@ -11,7 +11,12 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("", context =>
+{
+    context.Response.Redirect("./index.html", permanent: false);
+    return Task.FromResult(0);
+});
+
 app.MapHub<GameHub>("/hub");
 
 app.Services.GetRequiredService<GameEngineService>().Start();
