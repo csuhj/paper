@@ -5,6 +5,7 @@ import { GameState } from "./gameState";
 import { CanvasHelper } from "./canvas-helper";
 import { InteractionHelper } from "./interaction-helper";
 import { Point } from "./point";
+import { Trail } from "./trail";
 
 const divMessages: HTMLDivElement = document.querySelector("#divMessages");
 const tbMessage: HTMLInputElement = document.querySelector("#tbMessage");
@@ -15,7 +16,10 @@ const canvas: HTMLCanvasElement = document.querySelector('#myCanvas');
 const canvasHelper = new CanvasHelper(canvas);
 const interactionHelper = new InteractionHelper(canvas);
 
-var players: Player[] = [];
+var gameState: GameState = new GameState({ 
+  players: [],
+  playerIdToTrailMap: {}
+});
 var me: Player = new Player({x: 50, y: 50});
 var lastMouseDirectionVectorPoint = new Point({x: 0, y: 0});
 
@@ -23,7 +27,13 @@ const gameFrame = () => {
     canvasHelper.clearCanvas();
     if (me) {
       canvasHelper.drawBackground(me);
-      players.forEach(player => canvasHelper.drawPlayer(me, player));
+      gameState.players?.forEach(player => {
+        const trail = gameState.playerIdToTrailMap[player.id];
+        if (trail) {
+          canvasHelper.drawTrail(me, player, trail);
+        }
+        canvasHelper.drawPlayer(me, player);
+      });
     }
 }
 
@@ -61,8 +71,8 @@ connection.on("messageReceived", (username: string, message: string) => {
   divMessages.scrollTop = divMessages.scrollHeight;
 });
 
-connection.on("gameStateUpdate", (gameState: GameState) => {
-    players = gameState.players;
+connection.on("gameStateUpdate", (newGameState: GameState) => {
+    gameState = newGameState;
     me = gameState.players.find(p => p.id === connection.connectionId);
   });
 

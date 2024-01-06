@@ -1,4 +1,5 @@
 import { Player } from "./player";
+import { Trail } from "./trail";
 
 export class CanvasHelper {
     private readonly backgroundPatternWidth = 20;
@@ -35,14 +36,10 @@ export class CanvasHelper {
     }
 
     public drawPlayer(me: Player, player: Player) {
-        var centerX = this.canvas.width / 2;
-        var centerY = this.canvas.height / 2;
+        const [viewPortLeft, viewPortTop] = this.getViewPortTopLeft(me);
 
-        var viewPortLeft = me.x - centerX;
-        var viewPortTop = me.y - centerY;
-
-        var offsetX = player.x - viewPortLeft;
-        var offsetY = player.y - viewPortTop;
+        const offsetX = player.x - viewPortLeft;
+        const offsetY = player.y - viewPortTop;
 
         this.context.beginPath();
         this.context.arc(offsetX, offsetY, /*player.size*/ 25, 0, 2 * Math.PI, false);
@@ -58,6 +55,45 @@ export class CanvasHelper {
             this.context.font='20px Georgia';
             this.context.fillText(player.name,offsetX, offsetY);
         }
+    }
+
+    public drawTrail(me: Player, player: Player, trail: Trail) {
+        const [viewPortLeft, viewPortTop] = this.getViewPortTopLeft(me);
+
+        this.context.beginPath();
+        this.context.lineWidth = 5;
+        this.context.strokeStyle = player.colour;
+
+        for (var i=0; i<trail.points?.length; i++) {
+            if (!trail.points[i]) {
+                continue;
+            }
+            
+            const trailPointOffsetX = trail.points[i].x - viewPortLeft;
+            const trailPointOffsetY = trail.points[i].y - viewPortTop;
+
+            if (i === 0) {
+                this.context.moveTo(trailPointOffsetX, trailPointOffsetY);
+            } else {
+                this.context.lineTo(trailPointOffsetX, trailPointOffsetY);
+            }
+        }
+
+        const playerOffsetX = player.x - viewPortLeft;
+        const playerOffsetY = player.y - viewPortTop;
+        this.context.lineTo(playerOffsetX, playerOffsetY);
+
+        this.context.stroke();
+    }
+
+    private getViewPortTopLeft(me: Player) {
+        var centerX = this.canvas.width / 2;
+        var centerY = this.canvas.height / 2;
+
+        var viewPortLeft = me.x - centerX;
+        var viewPortTop = me.y - centerY;
+
+        return [viewPortLeft, viewPortTop];
     }
 
     private createBackgroundPattern() {
