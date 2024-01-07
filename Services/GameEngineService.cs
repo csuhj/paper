@@ -40,7 +40,10 @@ namespace paper.Services
         private void OnClientConnected(object? sender, ConnectionEventArgs e)
         {
             if (gameEngine.NumberOfPlayers == 0)
+            {
                 gameEngine.Start();
+                Console.WriteLine($"Started Game Engine");
+            }
 
             gameEngine.AddPlayer(e.ConnectionId);
             Console.WriteLine($"Connected {e.ConnectionId}");
@@ -50,7 +53,10 @@ namespace paper.Services
         {
             gameEngine.RemovePlayer(e.ConnectionId);
             if (gameEngine.NumberOfPlayers == 0)
+            {
                 gameEngine.Stop();
+                Console.WriteLine($"Stopped Game Engine");
+            }
 
             Console.WriteLine($"Disconnected {e.ConnectionId}");
         }
