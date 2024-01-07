@@ -1,3 +1,5 @@
+# See https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=userlevel
+
 name: Build and deploy ASP.Net Core app to an Azure Web App
 
 env:
