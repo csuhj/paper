@@ -61,8 +61,8 @@ jobs:
       - name: npm install, build, and test
         run: |
           npm install
-          npm run build --if-present
           npm run test --if-present
+          npm run release --if-present
 
       - name: Restore NuGet packages with dotnet
         run: dotnet restore
