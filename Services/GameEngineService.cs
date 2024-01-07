@@ -80,7 +80,19 @@ namespace paper.Services
                         if (!playerIdToTrailMap.TryGetValue(player.Id, out Trail trail))
                             continue;
 
-                        trail.Points.Add(new Point() { X = player.X, Y = player.Y });
+                        Point playerPoint = new Point() { X = player.X, Y = player.Y };
+
+                        if (trail.Points.Count > 0)
+                        {
+                            foreach (Trail otherTrail in playerIdToTrailMap.Values) {
+                                if (otherTrail.DoesLineCrossTrail(trail.Points[trail.Points.Count - 1], playerPoint)) {
+                                    player.IsDead = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        trail.Points.Add(playerPoint);
                     }
                     lastTrailPointRecorded = DateTime.Now;
                 }
@@ -117,6 +129,7 @@ namespace paper.Services
 
             players.RemoveAt(indexOfPlayer);
             playerIdToDirectionVectorPointMap.Remove(e.ConnectionId);
+            playerIdToTrailMap.Remove(e.ConnectionId);
             Console.WriteLine($"Disconnected {e.ConnectionId}");
         }
 
